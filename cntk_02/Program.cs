@@ -11,7 +11,8 @@ class Program
     {
         return 2 * (x - a);
     }
-    static void Main(string[] args)
+
+    static void gd01()
     {
         float x = 67.0f;
 
@@ -28,6 +29,10 @@ class Program
             x -= alpha * dfx;
 
         }
+    }
+    static void Main(string[] args)
+    {
+        gd_02 a = new gd_02(2.0f, 3.0f, 4.0f, 4.0f);
     }
 
 }
