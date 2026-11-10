@@ -38,8 +38,10 @@ namespace cntk_basic_nn
             Learner learner = CNTKLib.SGDLearner(new ParameterVector(y.Parameters().ToArray()), new TrainingParameterScheduleDouble(0.01, 1));
             Trainer trainer = Trainer.CreateTrainer(y, loss, y_yt_equal, new List<Learner>() { learner});
 
-            for (int i = 1; i <=1000; i++)
+            for (int i = 1; i <= 10; i++)
             {
+                //Console.WriteLine($"Epoch {i} started.");
+
                 double sumLoss = 0;
                 double sumEval = 0;
 
@@ -130,18 +132,18 @@ namespace cntk_basic_nn
             float F1 = 2 * (precision * sensitivity) / (precision + sensitivity);
 
             Console.WriteLine(String.Format(
-                "True positive:\t{0}" +
-                "True negative:\t{1}" +
-                "False positive:\t{2}" +
-                "False negative:\t{3}",
+                "True positive:\t{0}\n" +
+                "True negative:\t{1}\n" +
+                "False positive:\t{2}\n" +
+                "False negative:\t{3}\n",
                 TP, TN, FP, FN
                 ));
 
             Console.WriteLine(String.Format(
-                "Accuracy:\t{0}" +
-                "Precision:\t{1}" +
-                "Sensitivity:\t{2}" +
-                "F1:\t{3}",
+                "Accuracy:\t{0}\n" +
+                "Precision:\t{1}\n" +
+                "Sensitivity:\t{2}\n" +
+                "F1:\t{3}\n",
                 accuracy, precision, sensitivity, F1
                 ));
         }
@@ -164,6 +166,11 @@ namespace cntk_basic_nn
         }
         static void Main(string[] args)
         {
+            bool success = DeviceDescriptor.TrySetDefaultDevice(
+                DeviceDescriptor.CPUDevice
+            );
+
+            Console.WriteLine($"CPU default set: {success}");
 
             new Program().Run();
         }

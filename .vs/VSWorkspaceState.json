@@ -1,8 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\cntk_01"
+    "\\cntk_01",
+    "\\cntk_basic_nn"
   ],
-  "SelectedNode": "\\cntk_01\\cntk_01.slnx",
+  "SelectedNode": "\\cntk_basic_nn\\cntk_basic_nn.slnx",
   "PreviewInSolutionExplorer": false
 }
