@@ -6,6 +6,7 @@ namespace cntk_basic_nn
 
     class AdvancedTraining
     {
+        DeviceDescriptor device = DeviceDescriptor.GPUDevice(0);
         const int inputSize = 4;
         const int hiddenNeuronCount = 3;
         const int outputSize = 1;
@@ -38,7 +39,7 @@ namespace cntk_basic_nn
             Learner learner = CNTKLib.SGDLearner(new ParameterVector(y.Parameters().ToArray()), new TrainingParameterScheduleDouble(0.01, 1));
             Trainer trainer = Trainer.CreateTrainer(y, loss, y_yt_equal, new List<Learner>() { learner});
 
-            for (int i = 1; i <= 10; i++)
+            for (int i = 1; i <= 1000; i++)
             {
                 //Console.WriteLine($"Epoch {i} started.");
 
@@ -52,12 +53,12 @@ namespace cntk_basic_nn
                     {
                         //normalizálás
                         {x, LoadInput(values[0], values[1], values[2], values[3])},
-                        {yt, Value.CreateBatch(yt.Shape, new float[] {values[4]}, DeviceDescriptor.CPUDevice) }
+                        {yt, Value.CreateBatch(yt.Shape, new float[] {values[4]}, device) }
                     };
 
                     var outputDataMap = new Dictionary<Variable, Value>() { { loss, null } };
 
-                    trainer.TrainMinibatch(inputDataMap, false, DeviceDescriptor.CPUDevice);
+                    trainer.TrainMinibatch(inputDataMap, false, device);
 
                     sumLoss += trainer.PreviousMinibatchLossAverage();
                     sumEval += trainer.PreviousMinibatchEvaluationAverage();
@@ -73,7 +74,7 @@ namespace cntk_basic_nn
             var inputDataMap = new Dictionary<Variable, Value>() { { x, LoadInput(age, height, weight, salary) }  };
             var outputDataMap = new Dictionary<Variable, Value>() { { y, null} };
 
-            y.Evaluate(inputDataMap, outputDataMap, DeviceDescriptor.CPUDevice);
+            y.Evaluate(inputDataMap, outputDataMap, device);
 
             return outputDataMap[y].GetDenseData<float>(y)[0][0];
         }
@@ -87,7 +88,7 @@ namespace cntk_basic_nn
             xstore[2] = weight / 150;
             xstore[3] = salary / 1500000;
 
-            return Value.CreateBatch(x.Shape, xstore, DeviceDescriptor.CPUDevice);
+            return Value.CreateBatch(x.Shape, xstore, device);
         }
     }
     internal class Program
@@ -166,11 +167,11 @@ namespace cntk_basic_nn
         }
         static void Main(string[] args)
         {
-            bool success = DeviceDescriptor.TrySetDefaultDevice(
-                DeviceDescriptor.CPUDevice
-            );
+            //bool success = DeviceDescriptor.TrySetDefaultDevice(
+            //    DeviceDescriptor.CPUDevice
+            //);
 
-            Console.WriteLine($"CPU default set: {success}");
+            //Console.WriteLine($"CPU default set: {success}");
 
             new Program().Run();
         }
