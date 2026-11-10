@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pandas as pd
+import numpy as np
 
 
 df = pd.read_csv("train_test_network.csv")
@@ -38,7 +39,7 @@ df["dst_port_bucket"] = pd.cut(
 
 df.drop(columns=["src_port", "dst_port"], inplace=True)
 
-# a két oszlopból mostmár csak 6 lesz one-hot után
+# 6 cols after ohe
 df = pd.get_dummies(
     df,
     columns=["src_port_bucket", "dst_port_bucket"],
@@ -47,5 +48,13 @@ df = pd.get_dummies(
 
 #convert to float
 df = df.astype(float)
+
+#normalization
+cols_to_normalize = ["duration", "src_bytes", "dst_bytes", "missed_bytes", "src_pkts", "src_ip_bytes", "dst_pkts", "dst_ip_bytes"]
+for c in cols_to_normalize:
+    #step1: log1p
+    df[c] = np.log1p(df[c])
+    #step2: standardscalar
+    
 
 print(df.head())

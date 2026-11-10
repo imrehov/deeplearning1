@@ -40,7 +40,13 @@ az MLP-k a teljes datasetet megkapják, az autencoder csak a normal (label == 0)
 
 # execution
 
+## coldrops
 droppoltam az oszlopokat
+
+## train/validation/test split
+szétszedem a datasetet három különböző részre
+
+## onehot
 most a nem szám oszlopokat one-hot encodeolni kellene, ezek: "proto", "conn_state", "service", "dns_qclass", "dns_qtype", "dns_rcode", "dns_AA", "dns_RD", "dns_RA", "dns_rejected"
 
 a következő lépés a portok osztályozása, mivel a számértékük nem ad semmilyen tényleges információt az egymás közti kapcsolatról a modellnek
@@ -49,6 +55,20 @@ a következő lépés a portok osztályozása, mivel a számértékük nem ad se
 1024–49151  registered
 49152+      ephemeral
 
-## TODO
+### TODO
 
 később a dst_portokat talán jobb lenne több kategóriába tenni?
+
+## normalization
+
+mivel a normalizálandó oszlopoknál
+duration
+src_bytes
+dst_bytes
+missed_bytes
+src_pkts
+src_ip_bytes
+dst_pkts
+dst_ip_bytes
+
+nagyon nagy eltérések is vannak, ezért a minmax nem túl optimális választás, inkább log1p + standardscalert fogok alkalmazni
