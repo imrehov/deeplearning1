@@ -4,7 +4,8 @@ using System.Text;
 
 namespace beadando
 {
-    internal class DataSet
+    public class DataSet
     {
+        public const int InputSize;
     }
 }
