@@ -16,8 +16,36 @@ df = pd.get_dummies(
     drop_first=True
 )
 
+#creating buckets for ports, one-hot encoding resulted in 28k columns
+#will use 3 buckets:
+# 0–1023      system/well-known
+# 1024–49151  registered
+# 49152+      ephemeral
+port_bins = [-1, 1023, 49151, 65535]
+port_labels = ["well_known", "registered", "ephemeral"]
+
+df["src_port_bucket"] = pd.cut(
+    df["src_port"],
+    bins=port_bins,
+    labels=port_labels
+)
+
+df["dst_port_bucket"] = pd.cut(
+    df["dst_port"],
+    bins=port_bins,
+    labels=port_labels
+)
+
+df.drop(columns=["src_port", "dst_port"], inplace=True)
+
+# a két oszlopból mostmár csak 6 lesz one-hot után
+df = pd.get_dummies(
+    df,
+    columns=["src_port_bucket", "dst_port_bucket"],
+    dtype=int
+)
+
 #convert to float
 df = df.astype(float)
-
 
 print(df.head())

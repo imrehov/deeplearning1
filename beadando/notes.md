@@ -43,3 +43,12 @@ az MLP-k a teljes datasetet megkapják, az autencoder csak a normal (label == 0)
 droppoltam az oszlopokat
 most a nem szám oszlopokat one-hot encodeolni kellene, ezek: "proto", "conn_state", "service", "dns_qclass", "dns_qtype", "dns_rcode", "dns_AA", "dns_RD", "dns_RA", "dns_rejected"
 
+a következő lépés a portok osztályozása, mivel a számértékük nem ad semmilyen tényleges információt az egymás közti kapcsolatról a modellnek
+3 bucketbe rendezem őket:
+0–1023      system/well-known
+1024–49151  registered
+49152+      ephemeral
+
+## TODO
+
+később a dst_portokat talán jobb lenne több kategóriába tenni?
