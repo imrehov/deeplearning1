@@ -1,3 +1,9 @@
 <Solution>
-  <Project Path="cntk_basic_nn.csproj" />
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="cntk_basic_nn.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
 </Solution>
