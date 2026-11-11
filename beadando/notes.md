@@ -44,7 +44,11 @@ az MLP-k a teljes datasetet megkapják, az autencoder csak a normal (label == 0)
 droppoltam az oszlopokat
 
 ## train/validation/test split
-szétszedem a datasetet három különböző részre
+szétszedem a datasetet három különböző részre 70-15-15 split
+
+log1p az összes dataseten
+a standardscaler kiszámolja a szórást és átlagokat a tanításhoz használt dataseten
+majd ugyanezzel a scalerrel transzformálom az 9sszest datasetet 
 
 ## onehot
 most a nem szám oszlopokat one-hot encodeolni kellene, ezek: "proto", "conn_state", "service", "dns_qclass", "dns_qtype", "dns_rcode", "dns_AA", "dns_RD", "dns_RA", "dns_rejected"
