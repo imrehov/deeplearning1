@@ -111,10 +111,19 @@ def preprocess(input_file, output_dir):
     X_val = X_val.astype(float)
     X_test = X_test.astype(float)
 
+    #put y back, this way it will always be the last col -> easier in cntk
+    train_df = X_train.copy()
+    train_df["label"] = y_train
+
+    val_df = X_val.copy()
+    val_df["label"] = y_val
+
+    test_df = X_test.copy()
+    test_df["label"] = y_test
+
+
     output_dir = Path(output_dir)
 
-    X_train.to_csv(output_dir / "train.csv", index=False)
-    X_val.to_csv(output_dir / "validate.csv", index=False)
-    X_test.to_csv(output_dir / "test.csv", index=False)
-
-    #return X_train, X_val, X_test, y_train, y_val, y_test
+    train_df.to_csv(output_dir / "train.csv", index=False)
+    val_df.to_csv(output_dir / "validate.csv", index=False)
+    test_df.to_csv(output_dir / "test.csv", index=False)
