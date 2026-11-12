@@ -127,3 +127,7 @@ def preprocess(input_file, output_dir):
     train_df.to_csv(output_dir / "train.csv", index=False)
     val_df.to_csv(output_dir / "validate.csv", index=False)
     test_df.to_csv(output_dir / "test.csv", index=False)
+
+    print(train_df.shape)
+    print(val_df.shape)
+    print(test_df.shape)
