@@ -1,4 +1,5 @@
 ﻿using CNTK;
+using System.Diagnostics;
 
 namespace beadando
 {
@@ -118,10 +119,15 @@ namespace beadando
                     for (int i = 0; i < currentBatchSize; i++)
                     {
 
-                        float probability = predictions[i][0];
+                        double probability = predictions[i][0];
 
-                        int predicted = probability >= 0.5f ? 1 : 0;
+                        // clamp, hogy ne legyen log(0)
+                        probability = Math.Clamp(probability, 1e-7, 1.0 - 1e-7);
+
+                        int predicted = probability >= 0.5 ? 1 : 0;
                         int actual = (int)validationDataset.Output[outputStart + i];
+
+                        validationResult.Loss += -(actual * Math.Log(probability) + (1 - actual) * Math.Log(1 - probability));
 
                         if (predicted == 1 && actual == 1)
                             validationResult.TP++;
@@ -134,8 +140,9 @@ namespace beadando
                     }
 
                 }
-
-                validationResult.Accuracy = (double)(validationResult.TP + validationResult.TN) / (validationResult.TP + validationResult.TN + validationResult.FP + validationResult.FN);
+                int total = validationResult.TP + validationResult.TN + validationResult.FP + validationResult.FN;
+                validationResult.Loss /= total;
+                validationResult.Accuracy = (double)(validationResult.TP + validationResult.TN) / total;
                 validationResult.Precision = (double)validationResult.TP / (validationResult.TP + validationResult.FP);
                 validationResult.Recall = (double)validationResult.TP / (validationResult.TP + validationResult.FN);
                 validationResult.F1 = 2 * validationResult.Precision * validationResult.Recall / (validationResult.Precision + validationResult.Recall);
@@ -145,6 +152,7 @@ namespace beadando
                 Console.WriteLine(String.Format("train loss:{0}\ttrain eval:{1}", sumLoss / samplesSeen, sumEval / samplesSeen));
                 Console.WriteLine();
                 Console.WriteLine("VALIDATION\n");
+                Console.WriteLine(String.Format("validation loss:{0}", validationResult.Loss));
                 Console.WriteLine(String.Format("Accuracy: {0}\t Precision: {1}\t Recall: {2}\t F1: {3}", validationResult.Accuracy, validationResult.Precision, validationResult.Recall, validationResult.F1));
                 Console.WriteLine(String.Format("TP: {0}\t TN: {1}\t FP: {2}\t FN: {3}\t", validationResult.TP, validationResult.TN, validationResult.FP, validationResult.FN));
 
@@ -153,7 +161,7 @@ namespace beadando
 
 
 
-        public class ValidationResult
+        public struct ValidationResult
         {
             public double Precision;
             public double Recall;
