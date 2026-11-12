@@ -6,10 +6,10 @@ namespace beadando
 {
     public class DataSet
     {
-        public const int InputSize = 71;
+        public readonly int InputSize = 70;
         public List<float> Input { get; set; } = new List<float>();
 
-        public const int OutputSize = 1;
+        public readonly int OutputSize = 1;
         public List<float> Output { get; set; } = new List<float>();
 
         public int Count { get; set; }
