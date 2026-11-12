@@ -121,9 +121,9 @@ def preprocess(input_file, output_dir):
     test_df = X_test.copy()
     test_df["label"] = y_test
 
-    train_df.to_csv("train.csv", index=False, header=False)
-    val_df.to_csv("validate.csv", index=False, header=False)
-    test_df.to_csv("test.csv", index=False, header=False)
+    # train_df.to_csv("train.csv", index=False, header=False)
+    # val_df.to_csv("validate.csv", index=False, header=False)
+    # test_df.to_csv("test.csv", index=False, header=False)
 
     output_dir = Path(output_dir)
 
@@ -131,6 +131,6 @@ def preprocess(input_file, output_dir):
     val_df.to_csv(output_dir / "validate.csv", index=False, header=False)
     test_df.to_csv(output_dir / "test.csv", index=False, header=False)
 
-    print(train_df.shape)
-    print(val_df.shape)
-    print(test_df.shape)
+    # print(train_df.shape)
+    # print(val_df.shape)
+    # print(test_df.shape)

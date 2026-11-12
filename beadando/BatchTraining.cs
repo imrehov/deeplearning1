@@ -5,7 +5,9 @@ namespace beadando
     class BatchTraining
     {
         DeviceDescriptor device = DeviceDescriptor.CPUDevice;
-        public DataSet dataset { get; private set; }
+        DataSet trainDataset { get; set; }
+        DataSet validationDataset { get; set; }
+
         const int hiddenNeuronCount = 64;
 
         const int epochCount = 5;
@@ -15,23 +17,24 @@ namespace beadando
         readonly Variable x;
         readonly Function y;
 
-        public BatchTraining(DataSet dataset)
+        public BatchTraining(DataSet train_dataset, DataSet validation_dataset)
         {
-            this.dataset = dataset;
+            trainDataset = train_dataset;
+            validationDataset = validation_dataset;
 
-            x = Variable.InputVariable(new int[] { this.dataset.InputSize }, DataType.Float);
-            Parameter w1 = new Parameter(new int[] { hiddenNeuronCount, this.dataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+            x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
+            Parameter w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
             Parameter b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
-            Parameter w2 = new Parameter(new int[] { this.dataset.OutputSize, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-            Parameter b2 = new Parameter(new int[] { this.dataset.OutputSize }, DataType.Float, 0);
+            Parameter w2 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+            Parameter b2 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
             y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w2, CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b))), b2));
         }
 
-        public void Train()
+        public void TrainAndValidate()
         {
 
             //ki kell egészíteni a gráfot
-            Variable yt = Variable.InputVariable(new int[] {this.dataset.OutputSize }, DataType.Float);
+            Variable yt = Variable.InputVariable(new int[] {trainDataset.OutputSize }, DataType.Float);
             Function loss = CNTKLib.BinaryCrossEntropy(y, yt);
 
             Function y_rounded = CNTKLib.Round(y);
@@ -43,31 +46,24 @@ namespace beadando
 
             for (int epochI = 1; epochI <= epochCount; epochI++)
             {
-                //Console.WriteLine($"Epoch {i} started.");
 
                 double sumLoss = 0;
                 double sumEval = 0;
                 int samplesSeen = 0;
 
-                //Console.WriteLine($"Count: {dataset.Count}");
-                //Console.WriteLine($"InputSize: {dataset.InputSize}");
-                //Console.WriteLine($"OutputSize: {dataset.OutputSize}");
-                //Console.WriteLine($"Input values: {dataset.Input.Count}");
-                //Console.WriteLine($"Output values: {dataset.Output.Count}");
-
-                dataset.Shuffle();
-                for (int start = 0; start < dataset.Count; start += batchSize)
+                trainDataset.Shuffle();
+                for (int start = 0; start < trainDataset.Count; start += batchSize)
                 {
-                    int currentBatchSize = Math.Min(batchSize, dataset.Count - start);
+                    int currentBatchSize = Math.Min(batchSize, trainDataset.Count - start);
 
-                    int inputStart = start * dataset.InputSize;
-                    int inputCount = currentBatchSize * dataset.InputSize;
+                    int inputStart = start * trainDataset.InputSize;
+                    int inputCount = currentBatchSize * trainDataset.InputSize;
 
-                    int outputStart = start * dataset.OutputSize;
-                    int outputCount = currentBatchSize * dataset.OutputSize;
+                    int outputStart = start * trainDataset.OutputSize;
+                    int outputCount = currentBatchSize * trainDataset.OutputSize;
 
-                    Value x_val = Value.CreateBatch(x.Shape, dataset.Input.GetRange(inputStart, inputCount), device);
-                    Value yt_val = Value.CreateBatch(yt.Shape, dataset.Output.GetRange(outputStart, outputCount), device);
+                    Value x_val = Value.CreateBatch(x.Shape, trainDataset.Input.GetRange(inputStart, inputCount), device);
+                    Value yt_val = Value.CreateBatch(yt.Shape, trainDataset.Output.GetRange(outputStart, outputCount), device);
 
                     var inputDataMap = new Dictionary<Variable, Value>()
                     {
@@ -75,7 +71,7 @@ namespace beadando
                         {yt, yt_val }
                     };
 
-                    bool isSweepEnd = start + currentBatchSize >= dataset.Count;
+                    bool isSweepEnd = start + currentBatchSize >= trainDataset.Count;
 
                     trainer.TrainMinibatch(inputDataMap, isSweepEnd, device);
 
@@ -85,36 +81,92 @@ namespace beadando
                     sumEval += trainer.PreviousMinibatchEvaluationAverage() * samples;
 
                     samplesSeen += samples;
-
-                    //if (start < 1)
-                    //{   
-                    //    Console.WriteLine(
-                    //        $"batch samples: {trainer.PreviousMinibatchSampleCount()}"
-                    //    );
-
-                    //    Console.WriteLine(
-                    //        $"batch loss: {trainer.PreviousMinibatchLossAverage()}"
-                    //    );
-
-                    //    Console.WriteLine(
-                    //        $"batch eval: {trainer.PreviousMinibatchEvaluationAverage()}"
-                    //    );
-                    //}
                 }
 
-                Console.WriteLine(String.Format("{0}\tloss:{1}\teval:{2}", epochI, sumLoss / samplesSeen, sumEval / samplesSeen));
+
+                ValidationResult validationResult = new ValidationResult();
+
+                for (int start = 0; start < validationDataset.Count; start += batchSize)
+                {
+
+                    int currentBatchSize = Math.Min(batchSize, validationDataset.Count - start);
+
+                    int inputStart = start * validationDataset.InputSize;
+
+                    int inputCount = currentBatchSize * validationDataset.InputSize;
+
+                    int outputStart = start * validationDataset.OutputSize;
+
+                    int outputCount = currentBatchSize * validationDataset.OutputSize;
+
+                    Value x_val = Value.CreateBatch(x.Shape, validationDataset.Input.GetRange(inputStart, inputCount), device);
+
+                    var inputDataMap = new Dictionary<Variable, Value>()
+                    {
+                        { x, x_val },
+                    };
+
+                    var outputDataMap = new Dictionary<Variable, Value>()
+                    {
+                        { y, null },
+                    };
+
+                    y.Evaluate(inputDataMap, outputDataMap, device);
+
+                    var predictions = outputDataMap[y].GetDenseData<float>(y);
+
+                    for (int i = 0; i < currentBatchSize; i++)
+                    {
+
+                        float probability = predictions[i][0];
+
+                        int predicted = probability >= 0.5f ? 1 : 0;
+                        int actual = (int)validationDataset.Output[outputStart + i];
+
+                        if (predicted == 1 && actual == 1)
+                            validationResult.TP++;
+                        else if (predicted == 0 && actual == 0)
+                            validationResult.TN++;
+                        else if (predicted == 1 && actual == 0)
+                            validationResult.FP++;
+                        else
+                            validationResult.FN++;
+                    }
+
+                }
+
+                validationResult.Accuracy = (double)(validationResult.TP + validationResult.TN) / (validationResult.TP + validationResult.TN + validationResult.FP + validationResult.FN);
+                validationResult.Precision = (double)validationResult.TP / (validationResult.TP + validationResult.FP);
+                validationResult.Recall = (double)validationResult.TP / (validationResult.TP + validationResult.FN);
+                validationResult.F1 = 2 * validationResult.Precision * validationResult.Recall / (validationResult.Precision + validationResult.Recall);
+
+                Console.WriteLine(String.Format("{0}\n", epochI));
+                Console.WriteLine("TRAINING\n");
+                Console.WriteLine(String.Format("train loss:{0}\ttrain eval:{1}", sumLoss / samplesSeen, sumEval / samplesSeen));
+                Console.WriteLine();
+                Console.WriteLine("VALIDATION\n");
+                Console.WriteLine(String.Format("Accuracy: {0}\t Precision: {1}\t Recall: {2}\t F1: {3}", validationResult.Accuracy, validationResult.Precision, validationResult.Recall, validationResult.F1));
+                Console.WriteLine(String.Format("TP: {0}\t TN: {1}\t FP: {2}\t FN: {3}\t", validationResult.TP, validationResult.TN, validationResult.FP, validationResult.FN));
+
             }
         }
 
-        //
-        //public float Prediction(float age, float height, float weight, float salary)
-        //{
-        //    var inputDataMap = new Dictionary<Variable, Value>() { { x, LoadInput(age, height, weight, salary) } };
-        //    var outputDataMap = new Dictionary<Variable, Value>() { { y, null } };
 
-        //    y.Evaluate(inputDataMap, outputDataMap, device);
 
-        //    return outputDataMap[y].GetDenseData<float>(y)[0][0];
-        //}
+        public class ValidationResult
+        {
+            public double Precision;
+            public double Recall;
+            public double F1;
+            public double Accuracy;
+            public double Loss;
+            public int TP;
+            public int TN;
+            public int FP;
+            public int FN;
+
+
+        }
+
     }
 }

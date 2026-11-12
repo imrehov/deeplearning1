@@ -9,9 +9,11 @@ namespace beadando
             DeviceDescriptor.TrySetDefaultDevice(DeviceDescriptor.CPUDevice);
 
             DataSet traindata = new DataSet(@"..\..\..\..\train.csv");
-            BatchTraining app = new BatchTraining(traindata);
+            DataSet validationdata = new DataSet(@"..\..\..\..\validate.csv");
 
-            app.Train();
+            BatchTraining app = new BatchTraining(traindata, validationdata);
+
+            app.TrainAndValidate();
             Console.ReadLine();
         }
     }
