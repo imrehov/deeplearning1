@@ -5,11 +5,15 @@ namespace beadando
 {
     class BatchTraining
     {
-        DeviceDescriptor device = DeviceDescriptor.CPUDevice;
-        DataSet trainDataset { get; set; }
-        DataSet validationDataset { get; set; }
+        readonly DeviceDescriptor device = DeviceDescriptor.CPUDevice;
+        readonly DataSet trainDataset;
+        readonly DataSet validationDataset;
+        readonly Variable x;
+        readonly Function y;
 
-        const int hiddenNeuronCount = 64;
+        int hiddenNeuronCount = 1;
+        int hiddenNeuronCount2 = 0;
+        int hiddenNeuronCount3 = 0;
 
         const int epochCount = 100;
 
@@ -17,20 +21,84 @@ namespace beadando
 
         const int basePatience = 10;
 
-        readonly Variable x;
-        readonly Function y;
 
-        public BatchTraining(DataSet train_dataset, DataSet validation_dataset)
+        public BatchTraining(DataSet train_dataset, DataSet validation_dataset, int depth)
         {
-            trainDataset = train_dataset;
-            validationDataset = validation_dataset;
+            this.trainDataset = train_dataset;
+            this.validationDataset = validation_dataset;
 
-            x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
-            Parameter w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-            Parameter b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
-            Parameter w2 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-            Parameter b2 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
-            y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w2, CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b))), b2));
+            switch (depth)
+            {
+                case 1:
+                    hiddenNeuronCount = 64;
+                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
+                    
+                    Parameter w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
+
+                    Function h1 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b));
+
+                    Parameter w2 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter b2 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
+
+                    y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w2, h1), b2));
+                    break;
+
+                case 2:
+                    hiddenNeuronCount = 128;
+                    hiddenNeuronCount2 = 64;
+
+                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
+
+                    w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
+
+                    h1 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b));
+
+                    w2 = new Parameter(new int[] { hiddenNeuronCount2, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b2 = new Parameter(new int[] { hiddenNeuronCount2 }, DataType.Float, 0);
+
+                    Function h2 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w2, h1), b2));
+
+                    Parameter w3 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount2 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter b3 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
+
+                    y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w3, h2), b3));
+                    break;
+
+                case 3:
+                    hiddenNeuronCount = 256;
+                    hiddenNeuronCount2 = 128;
+                    hiddenNeuronCount3 = 64;
+                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
+
+                    w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
+
+                    h1 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b));
+
+                    w2 = new Parameter(new int[] { hiddenNeuronCount2, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b2 = new Parameter(new int[] { hiddenNeuronCount2 }, DataType.Float, 0);
+
+                    h2 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w2, h1), b2));
+
+                    w3 = new Parameter(new int[] { hiddenNeuronCount3, hiddenNeuronCount2 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b3 = new Parameter(new int[] { hiddenNeuronCount3 }, DataType.Float, 0);
+
+                    Function h3 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w3, h2), b3));
+
+                    Parameter w4 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount3 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter b4 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
+
+                    y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w4, h3), b4));
+                    break;
+
+                default:
+                    throw new ArgumentException("Depth must be 1/2/3.");
+
+
+            }
+            
         }
 
         public void TrainAndValidate()
@@ -53,11 +121,6 @@ namespace beadando
 
             for (int epochI = 1; epochI <= epochCount; epochI++)
             {
-                if (patience == 0)
-                {
-                    Console.WriteLine("Model hasnt improved in the last 20 epochs, stopping early.");
-                    return;
-                }
 
                 double sumLoss = 0;
                 double sumEval = 0;
@@ -169,7 +232,7 @@ namespace beadando
 
                 if (validationResult.Loss < bestValidationLoss)
                 {
-                    y.Save(@"..\..\..\..\bestmodel");
+                    y.Save($@"..\..\..\..\bestmodel_{trainDataset.InputSize}_{hiddenNeuronCount}_{(hiddenNeuronCount2 == 0 ? "" :hiddenNeuronCount2.ToString() + '_')}{(hiddenNeuronCount3 == 0 ? "" : hiddenNeuronCount3.ToString() + '_')}{trainDataset.OutputSize}.cntk");
 
                     bestValidationLoss = validationResult.Loss;
                     Console.WriteLine("Model Saved!");
@@ -177,10 +240,14 @@ namespace beadando
                 }
                 else
                 {
-                    Console.WriteLine($"Loss did not improve, patience: {patience}");
-                    --patience;
+                    Console.WriteLine($"Loss did not improve, patience: {--patience}");
                 }
 
+                if (patience == 0)
+                {
+                    Console.WriteLine($"Model hasnt improved in the last {basePatience} epochs, stopping early.");
+                    break;
+                }
             }
         }
 
