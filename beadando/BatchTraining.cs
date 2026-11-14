@@ -11,9 +11,11 @@ namespace beadando
 
         const int hiddenNeuronCount = 64;
 
-        const int epochCount = 5;
+        const int epochCount = 100;
 
         const int batchSize = 128;
+
+        const int basePatience = 10;
 
         readonly Variable x;
         readonly Function y;
@@ -45,8 +47,17 @@ namespace beadando
             Learner learner = CNTKLib.SGDLearner(new ParameterVector(y.Parameters().ToArray()), new TrainingParameterScheduleDouble(0.01, 1));
             Trainer trainer = Trainer.CreateTrainer(y, loss, y_yt_equal, new List<Learner>() { learner });
 
+            double bestValidationLoss = double.MaxValue;
+
+            int patience = basePatience;
+
             for (int epochI = 1; epochI <= epochCount; epochI++)
             {
+                if (patience == 0)
+                {
+                    Console.WriteLine("Model hasnt improved in the last 20 epochs, stopping early.");
+                    return;
+                }
 
                 double sumLoss = 0;
                 double sumEval = 0;
@@ -154,14 +165,26 @@ namespace beadando
                 Console.WriteLine("VALIDATION\n");
                 Console.WriteLine(String.Format("validation loss:{0}", validationResult.Loss));
                 Console.WriteLine(String.Format("Accuracy: {0}\t Precision: {1}\t Recall: {2}\t F1: {3}", validationResult.Accuracy, validationResult.Precision, validationResult.Recall, validationResult.F1));
-                Console.WriteLine(String.Format("TP: {0}\t TN: {1}\t FP: {2}\t FN: {3}\t", validationResult.TP, validationResult.TN, validationResult.FP, validationResult.FN));
+                Console.WriteLine(String.Format("TP: {0}\t TN: {1}\t FP: {2}\t FN: {3}\n", validationResult.TP, validationResult.TN, validationResult.FP, validationResult.FN));
+
+                if (validationResult.Loss < bestValidationLoss)
+                {
+                    y.Save(@"..\..\..\..\bestmodel");
+
+                    bestValidationLoss = validationResult.Loss;
+                    Console.WriteLine("Model Saved!");
+                    patience = basePatience;
+                }
+                else
+                {
+                    Console.WriteLine($"Loss did not improve, patience: {patience}");
+                    --patience;
+                }
 
             }
         }
 
-
-
-        public struct ValidationResult
+        class ValidationResult
         {
             public double Precision;
             public double Recall;
@@ -172,9 +195,6 @@ namespace beadando
             public int TN;
             public int FP;
             public int FN;
-
-
         }
-
     }
 }

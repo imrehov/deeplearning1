@@ -76,3 +76,8 @@ dst_pkts
 dst_ip_bytes
 
 nagyon nagy eltérések is vannak, ezért a minmax nem túl optimális választás, inkább log1p + standardscalert fogok alkalmazni
+
+
+## 70 64 1 kész
+az első mlp modell kész, most implementálni fogok egy early returnt, ami elmenti a legjobb modellt, ha a loss már x kör óta nem csökkent, így nem az utolsó modell kerül mentésre, hanem valószínűleg a legjobb
+
