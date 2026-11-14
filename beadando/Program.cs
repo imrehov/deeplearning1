@@ -24,6 +24,8 @@ namespace beadando
                 TestOnly();
             }
 
+            Console.WriteLine("Run finished.");
+
             Console.ReadLine();
         }
 
@@ -82,6 +84,8 @@ namespace beadando
                 @"..\..\..\..\results.json",
                 json
             );
+
+            Console.WriteLine("Saved results to results.json");
         }
 
         static void TrainOnly()
