@@ -1,5 +1,6 @@
 ﻿using CNTK;
 using System.Diagnostics;
+using static beadando.BatchTraining;
 
 namespace beadando
 {
@@ -11,9 +12,9 @@ namespace beadando
         readonly Variable x;
         readonly Function y;
 
-        int hiddenNeuronCount = 1;
-        int hiddenNeuronCount2 = 0;
-        int hiddenNeuronCount3 = 0;
+        public int HiddenNeuronCount { get; private set; }
+        public int HiddenNeuronCount2 { get; private set; }
+        public int HiddenNeuronCount3 { get; private set; }
 
         const int epochCount = 100;
 
@@ -30,64 +31,64 @@ namespace beadando
             switch (depth)
             {
                 case 1:
-                    hiddenNeuronCount = 64;
-                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
+                    HiddenNeuronCount = 64;
+                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float, "x");
                     
-                    Parameter w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-                    Parameter b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
+                    Parameter w1 = new Parameter(new int[] { HiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter b = new Parameter(new int[] { HiddenNeuronCount }, DataType.Float, 0);
 
                     Function h1 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b));
 
-                    Parameter w2 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter w2 = new Parameter(new int[] { trainDataset.OutputSize, HiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
                     Parameter b2 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
 
                     y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w2, h1), b2));
                     break;
 
                 case 2:
-                    hiddenNeuronCount = 128;
-                    hiddenNeuronCount2 = 64;
+                    HiddenNeuronCount = 128;
+                    HiddenNeuronCount2 = 64;
 
-                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
+                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float, "x");
 
-                    w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-                    b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
+                    w1 = new Parameter(new int[] { HiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b = new Parameter(new int[] { HiddenNeuronCount }, DataType.Float, 0);
 
                     h1 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b));
 
-                    w2 = new Parameter(new int[] { hiddenNeuronCount2, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-                    b2 = new Parameter(new int[] { hiddenNeuronCount2 }, DataType.Float, 0);
+                    w2 = new Parameter(new int[] { HiddenNeuronCount2, HiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b2 = new Parameter(new int[] { HiddenNeuronCount2 }, DataType.Float, 0);
 
                     Function h2 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w2, h1), b2));
 
-                    Parameter w3 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount2 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter w3 = new Parameter(new int[] { trainDataset.OutputSize, HiddenNeuronCount2 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
                     Parameter b3 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
 
                     y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w3, h2), b3));
                     break;
 
                 case 3:
-                    hiddenNeuronCount = 256;
-                    hiddenNeuronCount2 = 128;
-                    hiddenNeuronCount3 = 64;
-                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float);
+                    HiddenNeuronCount = 256;
+                    HiddenNeuronCount2 = 128;
+                    HiddenNeuronCount3 = 64;
+                    x = Variable.InputVariable(new int[] { trainDataset.InputSize }, DataType.Float, "x");
 
-                    w1 = new Parameter(new int[] { hiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-                    b = new Parameter(new int[] { hiddenNeuronCount }, DataType.Float, 0);
+                    w1 = new Parameter(new int[] { HiddenNeuronCount, trainDataset.InputSize }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b = new Parameter(new int[] { HiddenNeuronCount }, DataType.Float, 0);
 
                     h1 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w1, x), b));
 
-                    w2 = new Parameter(new int[] { hiddenNeuronCount2, hiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-                    b2 = new Parameter(new int[] { hiddenNeuronCount2 }, DataType.Float, 0);
+                    w2 = new Parameter(new int[] { HiddenNeuronCount2, HiddenNeuronCount }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b2 = new Parameter(new int[] { HiddenNeuronCount2 }, DataType.Float, 0);
 
                     h2 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w2, h1), b2));
 
-                    w3 = new Parameter(new int[] { hiddenNeuronCount3, hiddenNeuronCount2 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
-                    b3 = new Parameter(new int[] { hiddenNeuronCount3 }, DataType.Float, 0);
+                    w3 = new Parameter(new int[] { HiddenNeuronCount3, HiddenNeuronCount2 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    b3 = new Parameter(new int[] { HiddenNeuronCount3 }, DataType.Float, 0);
 
                     Function h3 = CNTKLib.ReLU(CNTKLib.Plus(CNTKLib.Times(w3, h2), b3));
 
-                    Parameter w4 = new Parameter(new int[] { trainDataset.OutputSize, hiddenNeuronCount3 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
+                    Parameter w4 = new Parameter(new int[] { trainDataset.OutputSize, HiddenNeuronCount3 }, DataType.Float, CNTKLib.GlorotNormalInitializer());
                     Parameter b4 = new Parameter(new int[] { trainDataset.OutputSize }, DataType.Float, 0);
 
                     y = CNTKLib.Sigmoid(CNTKLib.Plus(CNTKLib.Times(w4, h3), b4));
@@ -99,6 +100,12 @@ namespace beadando
 
             }
             
+        }
+
+        public BatchTraining(string filename)
+        {
+            y = Function.Load(filename, device);
+            x = y.Arguments.Single(x => x.Name == "x");
         }
 
         public void TrainAndValidate()
@@ -159,7 +166,7 @@ namespace beadando
                 }
 
 
-                ValidationResult validationResult = new ValidationResult();
+                EvaluationResult evaluationResult = new EvaluationResult();
 
                 for (int start = 0; start < validationDataset.Count; start += batchSize)
                 {
@@ -201,40 +208,41 @@ namespace beadando
                         int predicted = probability >= 0.5 ? 1 : 0;
                         int actual = (int)validationDataset.Output[outputStart + i];
 
-                        validationResult.Loss += -(actual * Math.Log(probability) + (1 - actual) * Math.Log(1 - probability));
+                        evaluationResult.Loss += -(actual * Math.Log(probability) + (1 - actual) * Math.Log(1 - probability));
 
                         if (predicted == 1 && actual == 1)
-                            validationResult.TP++;
+                            evaluationResult.TP++;
                         else if (predicted == 0 && actual == 0)
-                            validationResult.TN++;
+                            evaluationResult.TN++;
                         else if (predicted == 1 && actual == 0)
-                            validationResult.FP++;
+                            evaluationResult.FP++;
                         else
-                            validationResult.FN++;
+                            evaluationResult.FN++;
                     }
 
                 }
-                int total = validationResult.TP + validationResult.TN + validationResult.FP + validationResult.FN;
-                validationResult.Loss /= total;
-                validationResult.Accuracy = (double)(validationResult.TP + validationResult.TN) / total;
-                validationResult.Precision = (double)validationResult.TP / (validationResult.TP + validationResult.FP);
-                validationResult.Recall = (double)validationResult.TP / (validationResult.TP + validationResult.FN);
-                validationResult.F1 = 2 * validationResult.Precision * validationResult.Recall / (validationResult.Precision + validationResult.Recall);
+                int total = evaluationResult.TP + evaluationResult.TN + evaluationResult.FP + evaluationResult.FN;
+                evaluationResult.Loss /= total;
+                evaluationResult.Accuracy = (double)(evaluationResult.TP + evaluationResult.TN) / total;
+                evaluationResult.Precision = (double)evaluationResult.TP / (evaluationResult.TP + evaluationResult.FP);
+                evaluationResult.Recall = (double)evaluationResult.TP / (evaluationResult.TP + evaluationResult.FN);
+                evaluationResult.F1 = 2 * evaluationResult.Precision * evaluationResult.Recall / (evaluationResult.Precision + evaluationResult.Recall);
 
+                Console.Clear();
                 Console.WriteLine(String.Format("{0}\n", epochI));
                 Console.WriteLine("TRAINING\n");
                 Console.WriteLine(String.Format("train loss:{0}\ttrain eval:{1}", sumLoss / samplesSeen, sumEval / samplesSeen));
                 Console.WriteLine();
                 Console.WriteLine("VALIDATION\n");
-                Console.WriteLine(String.Format("validation loss:{0}", validationResult.Loss));
-                Console.WriteLine(String.Format("Accuracy: {0}\t Precision: {1}\t Recall: {2}\t F1: {3}", validationResult.Accuracy, validationResult.Precision, validationResult.Recall, validationResult.F1));
-                Console.WriteLine(String.Format("TP: {0}\t TN: {1}\t FP: {2}\t FN: {3}\n", validationResult.TP, validationResult.TN, validationResult.FP, validationResult.FN));
+                Console.WriteLine(String.Format("validation loss:{0}", evaluationResult.Loss));
+                Console.WriteLine(String.Format("Accuracy: {0}\t Precision: {1}\t Recall: {2}\t F1: {3}", evaluationResult.Accuracy, evaluationResult.Precision, evaluationResult.Recall, evaluationResult.F1));
+                Console.WriteLine(String.Format("TP: {0}\t TN: {1}\t FP: {2}\t FN: {3}\n", evaluationResult.TP, evaluationResult.TN, evaluationResult.FP, evaluationResult.FN));
 
-                if (validationResult.Loss < bestValidationLoss)
+                if (evaluationResult.Loss < bestValidationLoss)
                 {
-                    y.Save($@"..\..\..\..\bestmodel_{trainDataset.InputSize}_{hiddenNeuronCount}_{(hiddenNeuronCount2 == 0 ? "" :hiddenNeuronCount2.ToString() + '_')}{(hiddenNeuronCount3 == 0 ? "" : hiddenNeuronCount3.ToString() + '_')}{trainDataset.OutputSize}.cntk");
+                    y.Save($@"..\..\..\..\bestmodel_{trainDataset.InputSize}_{HiddenNeuronCount}_{(HiddenNeuronCount2 == 0 ? "" :HiddenNeuronCount2.ToString() + '_')}{(HiddenNeuronCount3 == 0 ? "" : HiddenNeuronCount3.ToString() + '_')}{trainDataset.OutputSize}.cntk");
 
-                    bestValidationLoss = validationResult.Loss;
+                    bestValidationLoss = evaluationResult.Loss;
                     Console.WriteLine("Model Saved!");
                     patience = basePatience;
                 }
@@ -251,7 +259,73 @@ namespace beadando
             }
         }
 
-        class ValidationResult
+        public EvaluationResult Test(DataSet testDataset)
+        {
+            EvaluationResult evaluationResult = new EvaluationResult();
+
+            for (int start = 0; start < testDataset.Count; start++)
+            {
+                Console.WriteLine($"Value {start}, testing...");
+                int currentBatchSize = Math.Min(batchSize, testDataset.Count - start);
+
+                int inputStart = start * testDataset.InputSize;
+
+                int inputCount = currentBatchSize * testDataset.InputSize;
+
+                int outputStart = start * testDataset.OutputSize;
+
+                int outputCount = currentBatchSize * testDataset.OutputSize;
+
+                Value x_val = Value.CreateBatch(x.Shape, testDataset.Input.GetRange(inputStart, inputCount), device);
+
+                var inputDataMap = new Dictionary<Variable, Value>()
+                    {
+                        { x, x_val },
+                    };
+
+                var outputDataMap = new Dictionary<Variable, Value>()
+                    {
+                        { y, null },
+                    };
+
+                y.Evaluate(inputDataMap, outputDataMap, device);
+
+                var predictions = outputDataMap[y].GetDenseData<float>(y);
+
+                for (int i = 0; i < currentBatchSize; i++)
+                {
+
+                    double probability = predictions[i][0];
+
+                    // clamp, hogy ne legyen log(0)
+                    probability = Math.Clamp(probability, 1e-7, 1.0 - 1e-7);
+
+                    int predicted = probability >= 0.5 ? 1 : 0;
+                    int actual = (int)testDataset.Output[outputStart + i];
+
+                    evaluationResult.Loss += -(actual * Math.Log(probability) + (1 - actual) * Math.Log(1 - probability));
+
+                    if (predicted == 1 && actual == 1)
+                        evaluationResult.TP++;
+                    else if (predicted == 0 && actual == 0)
+                        evaluationResult.TN++;
+                    else if (predicted == 1 && actual == 0)
+                        evaluationResult.FP++;
+                    else
+                        evaluationResult.FN++;
+                }
+                int total = evaluationResult.TP + evaluationResult.TN + evaluationResult.FP + evaluationResult.FN;
+                evaluationResult.Loss /= total;
+                evaluationResult.Accuracy = (double)(evaluationResult.TP + evaluationResult.TN) / total;
+                evaluationResult.Precision = (double)evaluationResult.TP / (evaluationResult.TP + evaluationResult.FP);
+                evaluationResult.Recall = (double)evaluationResult.TP / (evaluationResult.TP + evaluationResult.FN);
+                evaluationResult.F1 = 2 * evaluationResult.Precision * evaluationResult.Recall / (evaluationResult.Precision + evaluationResult.Recall);
+            }
+
+            return evaluationResult;
+        }
+
+        public class EvaluationResult
         {
             public double Precision;
             public double Recall;
